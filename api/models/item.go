@@ -2,7 +2,6 @@ package models
 
 import (
 	"encoding/json"
-	"time"
 
 	"github.com/gobuffalo/pop"
 	"github.com/gobuffalo/uuid"
@@ -11,16 +10,12 @@ import (
 )
 
 type Item struct {
-	ID         uuid.UUID `json:"id" db:"id"`
-	CreatedAt  time.Time `json:"created_at" db:"created_at"`
-	UpdatedAt  time.Time `json:"updated_at" db:"updated_at"`
-	Alias      string    `json:"alias" db:"alias"`
-	Title      string    `json:"title" db:"title"`
-	Desc       string    `json:"desc" db:"desc"`
-	Pictures   string    `json:"pictures" db:"pictures"`
-	Price      int       `json:"price" db:"price"`
-	Count      int       `json:"count" db:"count"`
-	CategoryID uuid.UUID `json:"category_id" db:"category_id"`
+	ID       uuid.UUID `json:"id" db:"id"`
+	Alias    string    `json:"alias" db:"alias"`
+	Title    string    `json:"title" db:"title"`
+	Pictures string    `json:"pictures" db:"pictures"`
+	Price    int       `json:"price" db:"price"`
+	Count    int       `json:"count" db:"count"`
 }
 
 // String is not required by pop and may be deleted
@@ -44,7 +39,6 @@ func (i *Item) Validate(tx *pop.Connection) (*validate.Errors, error) {
 	return validate.Validate(
 		&validators.StringIsPresent{Field: i.Alias, Name: "Alias"},
 		&validators.StringIsPresent{Field: i.Title, Name: "Title"},
-		&validators.StringIsPresent{Field: i.Desc, Name: "Desc"},
 		&validators.StringIsPresent{Field: i.Pictures, Name: "Pictures"},
 		&validators.IntIsPresent{Field: i.Price, Name: "Price"},
 		&validators.IntIsPresent{Field: i.Count, Name: "Count"},

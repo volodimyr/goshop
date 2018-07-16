@@ -3,6 +3,7 @@ package actions
 import (
 	"github.com/gobuffalo/buffalo"
 	"github.com/gobuffalo/buffalo/middleware"
+	"github.com/gobuffalo/buffalo/middleware/basicauth"
 	"github.com/gobuffalo/buffalo/middleware/ssl"
 	"github.com/gobuffalo/envy"
 	"github.com/unrolled/secure"
@@ -41,22 +42,48 @@ func App() *buffalo.App {
 			app.Use(middleware.ParameterLogger)
 		}
 
-		// Wraps each request in a transaction.
-		//  c.Value("tx").(*pop.PopTransaction)
-		// Remove to disable this.
 		app.Use(middleware.PopTransaction(models.DB))
+
+		// admin zone
+		auth := app.Group("/")
+		auth.Use(basicauth.Middleware(BasicAuth))
+		auth.GET("/orders", OrdersList)                   // done
+		auth.GET("/orders/{id}", OrdersIndex)             // done
+		auth.PUT("/orders/{id}", OrdersUpdate)            // done
+		auth.DELETE("/categories/{id}", CategoriesDelete) // done
+		auth.POST("/categories", CategoriesCreate)        // done
+		auth.PUT("/categories/{id}", CategoriesUpdate)    // done
+		auth.DELETE("/items/{id}", ItemsDelete)           // done
+		auth.POST("/items", ItemsCreate)                  // done
+		auth.PUT("/items/{id}", ItemsUpdate)              // done
+		// POST /items/{itemID}/picture - add picture to the item
+		// POST /import/categories - upload list of categories (json)
+		// POST /import/items - upload list of items (json)
+		// POST /import/pictures - upload archive of pictures for existing items (zip, alias suffix matching)
+		// GET /export/orders - download list of orders
 
 		app.GET("/", HomeHandler)
 
-		app.GET("/items/list", ItemsList)
-		app.GET("/items/index", ItemsIndex)
-		app.GET("/categories/list", CategoriesList)
-		app.GET("/categories/index", CategoriesIndex)
-		app.POST("/orders/create", OrdersCreate)
-		app.PUT("/orders/update", OrdersUpdate)
+		app.GET("/items", ItemsList)                 // done
+		app.GET("/items/{id}", ItemsIndex)           // done
+		app.GET("/categories", CategoriesList)       // done
+		app.GET("/categories/{id}", CategoriesIndex) // done
+		app.POST("/orders", OrdersCreate)            // done
+		// PUT /orders/{orderID}/item - add item to the order (by id and count)
+
+		app.ServeFiles("/assets", assetBox)
 	}
 
 	return app
+}
+
+func BasicAuth(c buffalo.Context, basUsr string, basPwd string) (bool, error) {
+	username := envy.Get("BASIC_USERNAME", "development")
+	pwd := envy.Get("BASIC_PASSWORD", "development")
+	if username == basUsr && pwd == basPwd {
+		return true, nil
+	}
+	return false, basicauth.ErrAuthFail
 }
 
 // forceSSL will return a middleware that will redirect an incoming request

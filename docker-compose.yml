@@ -19,3 +19,6 @@ services:
       - db
     depends_on:
       - db
+    environment:
+      - BASIC_USERNAME=api
+      - BASIC_PASSWORD=changeMe
