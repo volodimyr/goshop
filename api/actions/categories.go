@@ -1,23 +1,61 @@
 package actions
 
 import (
+	"encoding/json"
 	"goshop/api/models"
+	"io/ioutil"
 	"net/http"
 
 	"github.com/gobuffalo/buffalo"
 	"github.com/gobuffalo/uuid"
 )
 
+func ImportCategories(c buffalo.Context) error {
+	f, err := c.File("categories")
+	if err != nil {
+		return c.Render(http.StatusBadRequest, r.String("Couldn't upload file."))
+	}
+
+	buf, err := ioutil.ReadAll(f)
+	if err != nil {
+		return c.Render(http.StatusBadRequest, r.String("Couldn't read file."))
+	}
+
+	cgs := &models.Categories{}
+	err = json.Unmarshal(buf, cgs)
+	if err != nil {
+		return c.Render(http.StatusBadRequest, r.String("Couldn't unmarshal json"))
+	}
+
+	db := models.DB
+	for _, cg := range *cgs {
+		cg.ID, err = uuid.NewV4()
+		if err != nil {
+			// return errors.WithStack(err)
+			return c.Render(http.StatusInternalServerError, r.String("Internal server error"))
+		}
+	}
+
+	err = db.Create(cgs)
+	if err != nil {
+		// 		return errors.WithStack(err)
+		return c.Render(http.StatusInternalServerError, r.String("Internal server error"))
+	}
+	return c.Render(200, r.JSON(cgs))
+}
+
 // CategoriesList default implementation.
 func CategoriesList(c buffalo.Context) error {
 	db := models.DB
 	cgs := &models.Categories{}
-	err := db.All(cgs)
+	q := db.PaginateFromParams(c.Params())
+	err := q.All(cgs)
 
 	if err != nil {
 		// 		return errors.WithStack(err)
 		return c.Render(http.StatusInternalServerError, r.String("Internal server error"))
 	}
+	c.Set("pagination", q.Paginator)
 	return c.Render(200, r.JSON(cgs))
 }
 
@@ -80,7 +118,7 @@ func CategoriesCreate(c buffalo.Context) error {
 		// 		return errors.WithStack(err)
 		return c.Render(http.StatusInternalServerError, r.String("Internal server error"))
 	}
-	return c.Render(200, r.JSON(cg))
+	return c.Render(201, r.JSON(cg))
 }
 
 // CategoriesUpdate update the existing or create new one if doesn't exist

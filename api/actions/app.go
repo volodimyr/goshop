@@ -47,29 +47,29 @@ func App() *buffalo.App {
 		// admin zone
 		auth := app.Group("/")
 		auth.Use(basicauth.Middleware(BasicAuth))
-		auth.GET("/orders", OrdersList)                   // done
-		auth.GET("/orders/{id}", OrdersIndex)             // done
-		auth.PUT("/orders/{id}", OrdersUpdate)            // done
-		auth.DELETE("/categories/{id}", CategoriesDelete) // done
-		auth.POST("/categories", CategoriesCreate)        // done
-		auth.PUT("/categories/{id}", CategoriesUpdate)    // done
-		auth.DELETE("/items/{id}", ItemsDelete)           // done
-		auth.POST("/items", ItemsCreate)                  // done
-		auth.PUT("/items/{id}", ItemsUpdate)              // done
-		// POST /items/{itemID}/picture - add picture to the item
-		// POST /import/categories - upload list of categories (json)
-		// POST /import/items - upload list of items (json)
+		auth.GET("/orders", OrdersList)
+		auth.GET("/orders/{id}", OrdersIndex)
+		auth.PUT("/orders/{id}", OrdersUpdate)
+		auth.DELETE("/categories/{id}", CategoriesDelete)
+		auth.POST("/categories", CategoriesCreate)
+		auth.PUT("/categories/{id}", CategoriesUpdate)
+		auth.DELETE("/items/{id}", ItemsDelete)
+		auth.POST("/items", ItemsCreate)
+		auth.PUT("/items/{id}", ItemsUpdate)
+		auth.GET("/export/orders", ExportOrders)
+		// auth.POST("/items/{id}/picture", ItemsAddPicture)
+		auth.POST("/import/categories", ImportCategories) //doesn't work properly
+		auth.POST("/import/items", ImportItems)           //doesn't work properly
 		// POST /import/pictures - upload archive of pictures for existing items (zip, alias suffix matching)
-		// GET /export/orders - download list of orders
 
 		app.GET("/", HomeHandler)
 
-		app.GET("/items", ItemsList)                 // done
-		app.GET("/items/{id}", ItemsIndex)           // done
-		app.GET("/categories", CategoriesList)       // done
-		app.GET("/categories/{id}", CategoriesIndex) // done
-		app.POST("/orders", OrdersCreate)            // done
-		// PUT /orders/{orderID}/item - add item to the order (by id and count)
+		app.GET("/items", ItemsList)
+		app.GET("/items/{id}", ItemsIndex)
+		app.GET("/categories", CategoriesList)
+		app.GET("/categories/{id}", CategoriesIndex)
+		app.POST("/orders", OrdersCreate)
+		app.PUT("/orders/{id}/item", AddItemToTheOrder)
 
 		app.ServeFiles("/assets", assetBox)
 	}
